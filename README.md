@@ -1,31 +1,43 @@
 # CodeAlpha Tasks
 
-## Task 1 - E-Commerce Store
+This repository contains my projects completed during the CodeAlpha internship.
 
-### Technologies
+## Tasks
+
+### Task 1 - Ecommerce Store
+
+A full-stack e-commerce website built using:
 - HTML
 - CSS
 - JavaScript
 - Node.js
 - Express.js
-- MongoDB
+- MongoDB Atlas
 
-### How to Run
+## How to Run
 
-1. Open the Task-1-Ecommerce-Store folder.
+### 1. Clone the repository
 
-2. Install dependencies:
+git clone https://github.com/nandhuATgit/codealpha_tasks.git
+
+### 2. Open the Task 1 folder
+
+cd "Task 1 - Ecommerce-Store"
+
+### 3. Install dependencies
 
 npm install
 
-3. Create a `.env` file using `.env.example`.
+### 4. Create .env
 
-4. Add the required MongoDB connection string and other environment variables.
+Create a `.env` file using `.env.example`.
 
-5. Start the server:
+Add your MongoDB Atlas connection string and other required environment variables.
+
+### 5. Start the server
 
 node server.js
 
-6. Open:
+### 6. Open the website
 
 http://localhost:5000
