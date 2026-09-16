@@ -1,0 +1,36 @@
+{
+  "name": "ecommerce-store",
+  "version": "1.0.0",
+  "description": "A simple full-stack e-commerce store built with Node.js, Express, MongoDB, and Vanilla JS for college project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node seed.js",
+    "test:models": "node test-models.js",
+    "test:products": "node test-product-api.js",
+    "test:cart": "node test-cart.js",
+    "test:auth": "node test-auth.js",
+    "test:orders": "node test-orders.js"
+  },
+  "keywords": [
+    "ecommerce",
+    "nodejs",
+    "express",
+    "mongodb",
+    "javascript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

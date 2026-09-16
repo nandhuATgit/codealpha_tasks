@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Store | E-Commerce Project</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <a href="/index.html">🛒 CollegeStore</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index.html" class="active">Home</a></li>
+      <li><a href="/product.html">Products</a></li>
+      <li><a href="/cart.html">Cart <span class="cart-badge">0</span></a></li>
+      <li><a href="/login.html">Login</a></li>
+      <li><a href="/register.html" class="btn btn-primary" style="color: white;">Register</a></li>
+    </ul>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Hero Banner -->
+    <section class="hero">
+      <h1>Campus Tech & Student Essentials</h1>
+      <p>A full-stack college project built with Node.js, Express, MongoDB, and Vanilla JavaScript.</p>
+      <a href="/product.html" class="btn btn-secondary">Explore All Products</a>
+    </section>
+
+    <!-- Backend & Database Connectivity Status -->
+    <section class="status-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h3 style="font-size: 1.05rem;">Backend & Database Status</h3>
+        <span id="api-status-badge" class="status-badge loading">Checking server...</span>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-muted);" id="db-status">
+        MongoDB: Checking connection...
+      </p>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section style="margin-bottom: 3.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.75rem; color: var(--dark);">Featured Products</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Fetched live from <code>GET /api/products</code></p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <input 
+            type="text" 
+            id="home-search" 
+            placeholder="Search products..." 
+            style="padding: 0.55rem 1rem; border: 1px solid var(--border); border-radius: 8px; width: 220px; outline: none; font-size: 0.9rem;"
+          >
+          <button class="btn btn-primary" id="btn-search" style="padding: 0.55rem 1rem;">Search</button>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="filter-bar" id="category-filter-bar">
+        <button class="filter-btn active" data-category="">All Items</button>
+        <button class="filter-btn" data-category="electronics">Electronics</button>
+        <button class="filter-btn" data-category="audio">Audio</button>
+        <button class="filter-btn" data-category="accessories">Accessories</button>
+        <button class="filter-btn" data-category="books">Books</button>
+        <button class="filter-btn" data-category="lifestyle">Lifestyle</button>
+      </div>
+
+      <!-- Products Grid (Dynamically Populated via fetch) -->
+      <div class="grid" id="home-products-grid">
+        <!-- Injected by public/js/products.js -->
+      </div>
+    </section>
+
+    <!-- Quick Architecture Navigation -->
+    <section style="margin-bottom: 2rem;">
+      <h3 style="margin-bottom: 1rem; color: var(--dark);">Project Navigation</h3>
+      <div class="grid">
+        <div class="card">
+          <h4>Full Product Catalog</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.5rem 0 1rem 0;">
+            Filter, search, or view detailed product views with dedicated URLs.
+          </p>
+          <a href="/product.html" class="btn btn-secondary" style="display: block; text-align: center;">View Catalog</a>
+        </div>
+
+        <div class="card">
+          <h4>Authentication</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.5rem 0 1rem 0;">
+            User login and registration with JWT and password hashing.
+          </p>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="/login.html" class="btn btn-secondary" style="flex: 1; text-align: center;">Login</a>
+            <a href="/register.html" class="btn btn-secondary" style="flex: 1; text-align: center;">Register</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>Cart & Checkout</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.5rem 0 1rem 0;">
+            Cart state management, order totals, and checkout form.
+          </p>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="/cart.html" class="btn btn-secondary" style="flex: 1; text-align: center;">Cart</a>
+            <a href="/checkout.html" class="btn btn-secondary" style="flex: 1; text-align: center;">Checkout</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 CollegeStore Project. Built with Node.js, Express, and MongoDB.</p>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/products.js"></script>
+  <script>
+    let activeCategory = '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initial fetch of products
+      loadProducts('home-products-grid');
+
+      // Category filter buttons
+      const filterButtons = document.querySelectorAll('#category-filter-bar .filter-btn');
+      filterButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterButtons.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeCategory = btn.dataset.category || '';
+          const searchVal = document.getElementById('home-search').value;
+          loadProducts('home-products-grid', { category: activeCategory, search: searchVal });
+        });
+      });
+
+      // Search functionality
+      const searchInput = document.getElementById('home-search');
+      const searchBtn = document.getElementById('btn-search');
+
+      const triggerSearch = () => {
+        loadProducts('home-products-grid', {
+          category: activeCategory,
+          search: searchInput.value.trim(),
+        });
+      };
+
+      searchBtn.addEventListener('click', triggerSearch);
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') triggerSearch();
+      });
+    });
+
+    function resetFilters() {
+      document.getElementById('home-search').value = '';
+      activeCategory = '';
+      const filterButtons = document.querySelectorAll('#category-filter-bar .filter-btn');
+      filterButtons.forEach((b) => b.classList.remove('active'));
+      filterButtons[0]?.classList.add('active');
+      loadProducts('home-products-grid');
+    }
+  </script>
+</body>
+</html>

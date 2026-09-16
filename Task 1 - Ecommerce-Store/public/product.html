@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products | CollegeStore</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <a href="/index.html">🛒 CollegeStore</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/product.html" class="active">Products</a></li>
+      <li><a href="/cart.html">Cart <span class="cart-badge">0</span></a></li>
+      <li><a href="/login.html">Login</a></li>
+      <li><a href="/register.html" class="btn btn-primary" style="color: white;">Register</a></li>
+    </ul>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    <!-- Single Product Detail Section (Visible when ?id=... is present) -->
+    <div id="product-detail-view" style="display: none;">
+      <div id="product-detail-content">
+        <!-- Rendered dynamically by loadProductDetail() in products.js -->
+      </div>
+    </div>
+
+    <!-- Full Catalog Section (Visible when no ?id parameter is in URL) -->
+    <div id="product-catalog-view">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-size: 2rem; color: var(--dark);">Product Catalog</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Browse our complete collection of campus gear and tech accessories.</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <input 
+            type="text" 
+            id="catalog-search" 
+            placeholder="Search products..." 
+            style="padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; width: 220px; outline: none; font-size: 0.9rem;"
+          >
+          <button class="btn btn-primary" id="btn-catalog-search" style="padding: 0.6rem 1rem;">Search</button>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="filter-bar" id="catalog-filter-bar">
+        <button class="filter-btn active" data-category="">All Categories</button>
+        <button class="filter-btn" data-category="electronics">Electronics</button>
+        <button class="filter-btn" data-category="audio">Audio</button>
+        <button class="filter-btn" data-category="accessories">Accessories</button>
+        <button class="filter-btn" data-category="books">Books</button>
+        <button class="filter-btn" data-category="lifestyle">Lifestyle</button>
+      </div>
+
+      <!-- Product Cards Grid -->
+      <div class="grid" id="catalog-products-grid">
+        <!-- Injected by public/js/products.js -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 CollegeStore Project. Built with Node.js, Express, and MongoDB.</p>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/products.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('id');
+
+      const detailView = document.getElementById('product-detail-view');
+      const catalogView = document.getElementById('product-catalog-view');
+
+      if (productId) {
+        // Render single product details view
+        detailView.style.display = 'block';
+        catalogView.style.display = 'none';
+        loadProductDetail('product-detail-content', productId);
+      } else {
+        // Render full catalog view
+        detailView.style.display = 'none';
+        catalogView.style.display = 'block';
+        initCatalog();
+      }
+    });
+
+    let currentCategory = '';
+
+    function initCatalog() {
+      loadProducts('catalog-products-grid');
+
+      const filterButtons = document.querySelectorAll('#catalog-filter-bar .filter-btn');
+      filterButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterButtons.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentCategory = btn.dataset.category || '';
+          const searchVal = document.getElementById('catalog-search').value;
+          loadProducts('catalog-products-grid', { category: currentCategory, search: searchVal });
+        });
+      });
+
+      const searchInput = document.getElementById('catalog-search');
+      const searchBtn = document.getElementById('btn-catalog-search');
+
+      const triggerSearch = () => {
+        loadProducts('catalog-products-grid', {
+          category: currentCategory,
+          search: searchInput.value.trim(),
+        });
+      };
+
+      searchBtn.addEventListener('click', triggerSearch);
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') triggerSearch();
+      });
+    }
+
+    function resetFilters() {
+      document.getElementById('catalog-search').value = '';
+      currentCategory = '';
+      const filterButtons = document.querySelectorAll('#catalog-filter-bar .filter-btn');
+      filterButtons.forEach((b) => b.classList.remove('active'));
+      filterButtons[0]?.classList.add('active');
+      loadProducts('catalog-products-grid');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart | CollegeStore</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <a href="/index.html">🛒 CollegeStore</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/product.html">Products</a></li>
+      <li>
+        <a href="/cart.html" class="active">
+          Cart <span class="cart-badge">0</span>
+        </a>
+      </li>
+      <li><a href="/login.html">Login</a></li>
+      <li><a href="/register.html" class="btn btn-primary" style="color: white;">Register</a></li>
+    </ul>
+  </header>
+
+  <!-- Cart Container -->
+  <main class="container">
+    <div style="margin-bottom: 2rem;">
+      <h1 style="font-size: 2rem; color: var(--dark); margin-bottom: 0.25rem;">Shopping Cart</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Review and manage your selected items before proceeding to checkout.</p>
+    </div>
+
+    <!-- Dynamic Cart Content (populated by js/cart-page.js) -->
+    <div id="cart-view-container">
+      <!-- Injected dynamically based on localStorage cart state -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 CollegeStore Project. Built with Node.js, Express, and MongoDB.</p>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/cart-page.js"></script>
+</body>
+</html>

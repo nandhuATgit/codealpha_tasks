@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | CollegeStore</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <a href="/index.html">🛒 CollegeStore</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/product.html">Products</a></li>
+      <li><a href="/cart.html">Cart <span class="cart-badge">0</span></a></li>
+      <li><a href="/login.html">Login</a></li>
+      <li><a href="/register.html" class="btn btn-primary" style="color: white;">Register</a></li>
+    </ul>
+  </header>
+
+  <!-- Checkout Container -->
+  <main class="container">
+    <div style="margin-bottom: 2rem;">
+      <h1 style="font-size: 2rem; color: var(--dark); margin-bottom: 0.25rem;">Checkout & Order Review</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Complete your shipping information to place your order with Cash on Delivery.</p>
+    </div>
+
+    <!-- Empty Cart Fallback Notice (visible when cart has 0 items) -->
+    <div id="checkout-empty-view" class="cart-empty-state" style="display: none;">
+      <div class="cart-empty-icon">🛍️</div>
+      <h3>Your Cart is Empty</h3>
+      <p>You cannot proceed to checkout without adding products to your cart first.</p>
+      <a href="/product.html" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">Browse Products</a>
+    </div>
+
+    <!-- Unauthenticated Notice (visible if user is not logged in) -->
+    <div id="checkout-auth-prompt" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 2rem; text-align: center; margin-bottom: 2rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔒</div>
+      <h2 style="color: #1e40af; margin-bottom: 0.5rem;">Account Authentication Required</h2>
+      <p style="color: #1e3a8a; max-width: 500px; margin: 0 auto 1.5rem auto; font-size: 0.95rem;">
+        To protect your student orders and track delivery status, please sign in or create an account before completing checkout.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="/login.html" class="btn btn-primary" style="padding: 0.65rem 1.5rem;">Log In to Continue</a>
+        <a href="/register.html" class="btn btn-secondary" style="padding: 0.65rem 1.5rem;">Create Account</a>
+      </div>
+    </div>
+
+    <!-- Main 2-Column Checkout Layout -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;" id="checkout-layout">
+      <!-- Left Column: Shipping & Payment Form -->
+      <div class="card" id="checkout-form-card">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+          1. Delivery & Shipping Information
+        </h2>
+
+        <!-- Alert messages -->
+        <div id="checkout-alert" class="alert-box" style="display: none;"></div>
+
+        <form id="checkout-form" novalidate>
+          <div class="form-group">
+            <label for="fullName">Recipient Full Name *</label>
+            <input type="text" id="fullName" placeholder="e.g. Rahul Sharma" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Contact Phone Number *</label>
+            <input type="tel" id="phone" placeholder="e.g. 9876543210 (10 digits)" required>
+          </div>
+
+          <div class="form-group">
+            <label for="address">Campus / Street Address *</label>
+            <input type="text" id="address" placeholder="e.g. Room 304, Hostel Block B / Near Main Library" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="city">City / Campus *</label>
+              <input type="text" id="city" placeholder="e.g. Bangalore" required>
+            </div>
+            <div class="form-group">
+              <label for="postalCode">PIN Code *</label>
+              <input type="text" id="postalCode" placeholder="e.g. 560001" maxlength="10" required>
+            </div>
+          </div>
+
+          <h2 style="font-size: 1.25rem; margin: 2rem 0 1.25rem 0; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            2. Payment Method
+          </h2>
+
+          <div style="background: #f8fafc; border: 2px solid var(--primary); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer;">
+              <input type="radio" name="paymentMethod" value="COD" checked style="width: auto; margin-top: 4px;">
+              <div>
+                <strong style="color: var(--dark); font-size: 1rem;">💵 Cash on Delivery (COD) / Campus Pay</strong>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                  Pay in cash or through campus UPI when your order is delivered directly to your hostel or department.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <button type="submit" id="btn-place-order" class="btn btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1.05rem;">
+            Place Order
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: Order Summary Sidebar -->
+      <div class="card" style="height: fit-content;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+          Order Summary
+        </h2>
+
+        <!-- List of cart items -->
+        <div id="summary-items-list" style="margin-bottom: 1rem; max-height: 320px; overflow-y: auto;">
+          <!-- Injected dynamically by checkout.js -->
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; font-size: 0.95rem;">
+          <span style="color: var(--text-muted);">Items Subtotal:</span>
+          <span id="summary-subtotal" style="font-weight: 600;">$0.00</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; font-size: 0.95rem;">
+          <span style="color: var(--text-muted);">Campus Delivery:</span>
+          <span style="color: var(--success); font-weight: 600;">FREE</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--border); font-size: 1.25rem; font-weight: 800;">
+          <span>Total:</span>
+          <span id="summary-total" style="color: var(--primary);">$0.00</span>
+        </div>
+
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+          🛡️ <strong>Student Guarantee</strong>: Free returns within 7 days with valid college ID.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 CollegeStore Project. Built with Node.js, Express, and MongoDB.</p>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/checkout.js"></script>
+</body>
+</html>
