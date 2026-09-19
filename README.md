@@ -18,15 +18,10 @@ npm install
 
 Create a `.env` file using `.env.example`.
 
-# Server Configuration
-PORT=5000
+'PORT=5000
 NODE_ENV=development
-
-# MongoDB Connection String
 MONGODB_URI=your_mongodb_atlas_connection_string
-
-# JWT Secret Key for Authentication
-JWT_SECRET=your_jwt_secret_key_here
+JWT_SECRET=your_jwt_secret_key_here'
 
 Add your MongoDB Atlas connection string and other required environment variables.
 
