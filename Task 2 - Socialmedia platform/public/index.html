@@ -3,15 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home Feed - SocialMedia</title>
+    <title>Home - SocialMedia</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     <header>
       <div class="nav-brand">
         <a href="/index.html" class="nav-logo">
-          <span class="logo-badge">⚡</span>
-          <span>SocialMedia</span>
+          <span class="logo-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/>
+              <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>
+            </svg>
+          </span>
+          <span class="logo-text">SocialMedia</span>
         </a>
       </div>
       <nav id="navbar">
@@ -27,26 +35,23 @@
             <img
               id="sidebarAvatar"
               class="user-sidebar-avatar"
-              src="https://via.placeholder.com/80?text=User"
+              src="https://via.placeholder.com/72?text=User"
               alt="Avatar"
             />
             <h3 id="sidebarName" class="user-sidebar-name">User Name</h3>
             <p id="sidebarUsername" class="user-sidebar-username">@username</p>
             <p id="sidebarBio" class="user-sidebar-bio">No bio provided</p>
           </div>
-          <a href="/create-post.html" class="btn" style="text-decoration: none;">
-            <span>✍️</span> Create Post
-          </a>
+          <a href="/create-post.html" class="btn">Create Post</a>
         </div>
 
         <div id="sidebarLoggedOut" style="display: none; text-align: center;">
-          <div class="auth-icon-badge" style="width: 48px; height: 48px; font-size: 22px; margin-bottom: 10px;">✨</div>
-          <h3 style="margin: 0 0 6px; font-weight: 800; font-size: 18px;">Welcome!</h3>
-          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.5;">
-            Join the community to publish posts, connect with friends, like, and comment.
+          <h3 style="margin-bottom: 6px; font-weight: 700; font-size: 17px; color: var(--text-main);">Welcome to SocialMedia</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.45;">
+            Join the community to share posts, follow creators, like, and comment.
           </p>
-          <a href="/login.html" class="btn" style="text-decoration: none; margin-bottom: 10px;">Log In</a>
-          <a href="/register.html" class="btn btn-secondary" style="text-decoration: none;">Create Account</a>
+          <a href="/login.html" class="btn" style="margin-bottom: 8px;">Log In</a>
+          <a href="/register.html" class="btn btn-secondary">Create Account</a>
         </div>
       </aside>
 
@@ -57,25 +62,25 @@
           <img
             id="quickCreateAvatar"
             class="post-author-avatar"
-            src="https://via.placeholder.com/46?text=U"
+            src="https://via.placeholder.com/42?text=U"
             alt="My Avatar"
           />
-          <a href="/create-post.html" class="create-post-prompt-btn">What's on your mind? Share an update...</a>
+          <a href="/create-post.html" class="create-post-prompt-btn">What's on your mind?</a>
         </div>
 
         <div id="alertBox" class="alert"></div>
 
         <!-- Feed Options Tabs -->
         <div class="feed-tabs" id="feedTabs">
-          <button type="button" class="feed-tab-btn active" id="tabAllPosts">🌟 Explore All</button>
-          <button type="button" class="feed-tab-btn" id="tabFollowing">👥 Following</button>
+          <button type="button" class="feed-tab-btn active" id="tabAllPosts">All Posts</button>
+          <button type="button" class="feed-tab-btn" id="tabFollowing">Following</button>
         </div>
 
         <!-- Posts Feed Container -->
         <div id="postsFeed">
           <div class="empty-feed-msg">
             <span class="spinner"></span>
-            <span>Loading feed updates...</span>
+            <p>Loading posts...</p>
           </div>
         </div>
       </main>

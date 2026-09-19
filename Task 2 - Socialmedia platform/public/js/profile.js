@@ -148,6 +148,9 @@ document.addEventListener("DOMContentLoaded", () => {
         updateFollowButtonUI(isFollowing);
       }
     }
+
+    // Load and render posts authored by this user
+    loadUserPosts(user);
   }
 
   function updateFollowButtonUI(isFollowing) {
@@ -306,6 +309,109 @@ document.addEventListener("DOMContentLoaded", () => {
         if (saveProfileBtn) saveProfileBtn.disabled = false;
       }
     });
+  }
+
+  // Load and render posts authored by the profile user
+  async function loadUserPosts(user) {
+    const feedEl = document.getElementById("userPostsFeed");
+    if (!feedEl) return;
+
+    try {
+      feedEl.innerHTML = `
+        <div class="empty-feed-msg">
+          <span class="spinner"></span>
+          <p>Loading posts...</p>
+        </div>
+      `;
+
+      const res = await fetch("/api/posts");
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        feedEl.innerHTML = `<div class="empty-feed-msg"><p>Could not load user posts.</p></div>`;
+        return;
+      }
+
+      const userPosts = (data.posts || []).filter((p) => {
+        if (!p.user) return false;
+        const postAuthorU = (p.user.username || "").toLowerCase();
+        const profileU = (user.username || "").toLowerCase();
+        return postAuthorU === profileU;
+      });
+
+      if (userPosts.length === 0) {
+        feedEl.innerHTML = `
+          <div class="empty-feed-msg">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+            <h3>No posts yet</h3>
+            <p>@${escapeHtml(user.username)} has not published any posts yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      feedEl.innerHTML = "";
+      userPosts.forEach((post) => {
+        const card = document.createElement("article");
+        card.className = "post-card";
+        const formattedDate = new Date(post.createdAt).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        let imageHtml = "";
+        if (post.image && post.image.trim()) {
+          imageHtml = `
+            <div class="post-image-container">
+              <img src="${escapeHtml(post.image.trim())}" alt="Post image" class="post-image" onerror="this.parentElement.style.display='none';" />
+            </div>
+          `;
+        }
+
+        const likesCount = Array.isArray(post.likes) ? post.likes.length : 0;
+        const commentsCount = Array.isArray(post.comments) ? post.comments.length : 0;
+
+        card.innerHTML = `
+          <div class="post-header">
+            <div class="post-author-link">
+              <img src="${escapeHtml(profileImage.src)}" alt="${escapeHtml(user.name || user.username)}" class="post-author-avatar" onerror="this.src='https://via.placeholder.com/44?text=U'" />
+              <div class="post-author-details">
+                <span class="post-author-name">${escapeHtml(user.name || "User")}</span>
+                <span class="post-meta">@${escapeHtml(user.username)} • ${formattedDate}</span>
+              </div>
+            </div>
+          </div>
+          <div class="post-content">${escapeHtml(post.content)}</div>
+          ${imageHtml}
+          <div class="post-actions">
+            <span class="action-btn" style="cursor: default;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span class="action-count">${likesCount}</span>
+              <span>Likes</span>
+            </span>
+            <span class="action-btn" style="cursor: default;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span class="action-count">${commentsCount}</span>
+              <span>Comments</span>
+            </span>
+          </div>
+        `;
+        feedEl.appendChild(card);
+      });
+    } catch (err) {
+      feedEl.innerHTML = `<div class="empty-feed-msg"><p>Failed to load user posts.</p></div>`;
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   // Initial load

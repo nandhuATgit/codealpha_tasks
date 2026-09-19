@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
       postsFeed.innerHTML = `
         <div class="empty-feed-msg">
           <span class="spinner"></span>
-          <span>Loading feed updates...</span>
+          <p>Loading feed posts...</p>
         </div>
       `;
 
@@ -204,17 +204,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentFeedType === "following") {
         postsFeed.innerHTML = `
           <div class="empty-feed-msg">
-            <div style="font-size:32px; margin-bottom:4px;">👥</div>
-            <strong style="font-size:16px; color:var(--text-main);">No posts from followed users</strong>
-            <span>You're not following anyone yet, or they haven't shared a post. Explore "🌟 Explore All" to find creators!</span>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <h3>No posts from followed users</h3>
+            <p>You're not following anyone yet, or they haven't posted. Check "All Posts" to discover creators.</p>
           </div>
         `;
       } else {
         postsFeed.innerHTML = `
           <div class="empty-feed-msg">
-            <div style="font-size:32px; margin-bottom:4px;">✨</div>
-            <strong style="font-size:16px; color:var(--text-main);">No posts yet</strong>
-            <span>Be the first to share an update or story with the community!</span>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+            <h3>No posts yet</h3>
+            <p>Be the first to share an update, thought, or story with the community.</p>
           </div>
         `;
       }
@@ -261,7 +261,10 @@ document.addEventListener("DOMContentLoaded", () => {
       let deleteButtonHtml = "";
       if (isOwner) {
         deleteButtonHtml = `
-          <button class="btn-delete-post" data-post-id="${post._id}" title="Delete post">🗑️ Delete</button>
+          <button class="btn-delete-post" data-post-id="${post._id}" title="Delete post">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span>Delete</span>
+          </button>
         `;
       }
 
@@ -296,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="like-label">${hasLiked ? "Liked" : "Like"}</span>
           </button>
           <button class="action-btn comment-toggle-btn" data-post-id="${post._id}" type="button" title="Comment">
-            <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span class="action-count" id="commentCount-${post._id}">${commentCount}</span>
             <span>Comments</span>
           </button>
@@ -497,7 +500,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let deleteBtnHtml = "";
     if (isCommentOwner) {
-      deleteBtnHtml = `<button class="btn-delete-comment" data-comment-id="${comment._id}" data-post-id="${postId}" title="Delete comment">✕ Delete</button>`;
+      deleteBtnHtml = `<button class="btn-delete-comment" data-comment-id="${comment._id}" data-post-id="${postId}" title="Delete comment">Delete</button>`;
     }
 
     const formattedTime = new Date(comment.createdAt).toLocaleDateString(undefined, {

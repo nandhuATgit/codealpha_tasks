@@ -10,8 +10,16 @@
     <header>
       <div class="nav-brand">
         <a href="/index.html" class="nav-logo">
-          <span class="logo-badge">⚡</span>
-          <span>SocialMedia</span>
+          <span class="logo-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/>
+              <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>
+            </svg>
+          </span>
+          <span class="logo-text">SocialMedia</span>
         </a>
       </div>
       <nav id="navbar">
@@ -21,10 +29,9 @@
 
     <div class="page-wrapper">
       <main>
-        <div class="auth-header">
-          <div class="auth-icon-badge">👋</div>
-          <h2>Welcome Back</h2>
-          <p class="auth-subtitle">Log in to connect with friends and see the latest updates</p>
+        <div class="card-header">
+          <h2>Log In</h2>
+          <p class="card-subtitle">Enter your email and password to access your account</p>
         </div>
 
         <div id="alertBox" class="alert"></div>
@@ -36,7 +43,7 @@
               type="email"
               id="email"
               name="email"
-              placeholder="name@example.com"
+              placeholder="you@example.com"
               required
               autocomplete="email"
             />
@@ -48,7 +55,7 @@
               type="password"
               id="password"
               name="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               required
               autocomplete="current-password"
             />
@@ -58,7 +65,7 @@
         </form>
 
         <div class="form-footer">
-          Don't have an account? <a href="/register.html">Create one now</a>
+          Don't have an account? <a href="/register.html">Register here</a>
         </div>
       </main>
     </div>
