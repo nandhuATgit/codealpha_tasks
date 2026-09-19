@@ -3,20 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Post</title>
+    <title>Create Post - SocialMedia</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     <header>
-      <h1>Create Post</h1>
-      <nav>
-        <a href="/index.html">Home</a>
-        <a href="/profile.html">Profile</a>
+      <div class="nav-brand">
+        <a href="/index.html" class="nav-logo">
+          <span class="logo-badge">⚡</span>
+          <span>SocialMedia</span>
+        </a>
+      </div>
+      <nav id="navbar">
+        <!-- Populated by app.js -->
       </nav>
     </header>
-    <main>
-      <p>Posts will be added later.</p>
-    </main>
+
+    <div class="page-wrapper">
+      <main style="max-width: 580px;">
+        <div class="auth-header" style="text-align: left; margin-bottom: 22px;">
+          <div class="auth-icon-badge" style="margin-bottom: 12px;">✍️</div>
+          <h2>Create a New Post</h2>
+          <p class="auth-subtitle">Share an update, experience, or discussion topic with your network</p>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <form id="createPostForm" novalidate>
+          <div class="form-group">
+            <label for="content">What's on your mind?</label>
+            <textarea
+              id="content"
+              name="content"
+              rows="5"
+              placeholder="Write your story, thoughts, or ideas here..."
+              required
+              maxlength="1000"
+            ></textarea>
+            <div class="form-hint">Max 1,000 characters</div>
+          </div>
+
+          <div class="form-group">
+            <label for="image">Image URL (Optional)</label>
+            <input
+              type="url"
+              id="image"
+              name="image"
+              placeholder="https://images.unsplash.com/photo-..."
+            />
+            <div class="form-hint">Paste a link to any public image (Unsplash, Imgur, etc.)</div>
+          </div>
+
+          <button type="submit" id="submitPostBtn" class="btn">Publish Post</button>
+        </form>
+      </main>
+    </div>
+
     <script src="/js/app.js"></script>
+    <script src="/js/post.js"></script>
   </body>
 </html>

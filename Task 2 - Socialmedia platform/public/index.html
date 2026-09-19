@@ -3,23 +3,85 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Social Media Platform</title>
+    <title>Home Feed - SocialMedia</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     <header>
-      <h1>Social Media Platform</h1>
-      <nav>
-        <a href="/index.html">Home</a>
-        <a href="/login.html">Login</a>
-        <a href="/register.html">Register</a>
-        <a href="/profile.html">Profile</a>
-        <a href="/create-post.html">Create Post</a>
+      <div class="nav-brand">
+        <a href="/index.html" class="nav-logo">
+          <span class="logo-badge">⚡</span>
+          <span>SocialMedia</span>
+        </a>
+      </div>
+      <nav id="navbar">
+        <!-- Populated by app.js -->
       </nav>
     </header>
-    <main>
-      <p>Welcome. Core features will be added next.</p>
-    </main>
+
+    <div class="home-layout">
+      <!-- Left Sidebar: Current User Info / Quick Actions -->
+      <aside class="user-sidebar-card" id="userSidebar">
+        <div id="sidebarLoggedIn" style="display: none;">
+          <div class="user-sidebar-profile">
+            <img
+              id="sidebarAvatar"
+              class="user-sidebar-avatar"
+              src="https://via.placeholder.com/80?text=User"
+              alt="Avatar"
+            />
+            <h3 id="sidebarName" class="user-sidebar-name">User Name</h3>
+            <p id="sidebarUsername" class="user-sidebar-username">@username</p>
+            <p id="sidebarBio" class="user-sidebar-bio">No bio provided</p>
+          </div>
+          <a href="/create-post.html" class="btn" style="text-decoration: none;">
+            <span>✍️</span> Create Post
+          </a>
+        </div>
+
+        <div id="sidebarLoggedOut" style="display: none; text-align: center;">
+          <div class="auth-icon-badge" style="width: 48px; height: 48px; font-size: 22px; margin-bottom: 10px;">✨</div>
+          <h3 style="margin: 0 0 6px; font-weight: 800; font-size: 18px;">Welcome!</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.5;">
+            Join the community to publish posts, connect with friends, like, and comment.
+          </p>
+          <a href="/login.html" class="btn" style="text-decoration: none; margin-bottom: 10px;">Log In</a>
+          <a href="/register.html" class="btn btn-secondary" style="text-decoration: none;">Create Account</a>
+        </div>
+      </aside>
+
+      <!-- Main Feed Content Area -->
+      <main class="feed-main-content" style="max-width: 100%; margin: 0; padding: 0; background: transparent; box-shadow: none; border: none;">
+        <!-- Quick Create Post Banner (when logged in) -->
+        <div id="quickCreateCard" class="create-post-prompt-card" style="display: none;">
+          <img
+            id="quickCreateAvatar"
+            class="post-author-avatar"
+            src="https://via.placeholder.com/46?text=U"
+            alt="My Avatar"
+          />
+          <a href="/create-post.html" class="create-post-prompt-btn">What's on your mind? Share an update...</a>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Feed Options Tabs -->
+        <div class="feed-tabs" id="feedTabs">
+          <button type="button" class="feed-tab-btn active" id="tabAllPosts">🌟 Explore All</button>
+          <button type="button" class="feed-tab-btn" id="tabFollowing">👥 Following</button>
+        </div>
+
+        <!-- Posts Feed Container -->
+        <div id="postsFeed">
+          <div class="empty-feed-msg">
+            <span class="spinner"></span>
+            <span>Loading feed updates...</span>
+          </div>
+        </div>
+      </main>
+    </div>
+
     <script src="/js/app.js"></script>
+    <script src="/js/post.js"></script>
   </body>
 </html>

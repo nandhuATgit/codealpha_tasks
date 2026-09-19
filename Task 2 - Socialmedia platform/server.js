@@ -5,6 +5,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/users");
+const postRoutes = require("./routes/posts");
+const commentRoutes = require("./routes/comments");
+
 const app = express();
 const PORT = process.env.PORT;
 const NODE_ENV = process.env.NODE_ENV;
@@ -14,6 +19,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoutes);
 
 app.get("/api/test", (req, res) => {
   const mongoState = mongoose.connection.readyState;

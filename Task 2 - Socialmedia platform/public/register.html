@@ -3,20 +3,104 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register</title>
+    <title>Create an Account - SocialMedia</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     <header>
-      <h1>Register</h1>
-      <nav>
-        <a href="/index.html">Home</a>
-        <a href="/login.html">Login</a>
+      <div class="nav-brand">
+        <a href="/index.html" class="nav-logo">
+          <span class="logo-badge">⚡</span>
+          <span>SocialMedia</span>
+        </a>
+      </div>
+      <nav id="navbar">
+        <!-- Populated by app.js -->
       </nav>
     </header>
-    <main>
-      <p>Registration will be added later.</p>
-    </main>
+
+    <div class="page-wrapper">
+      <main>
+        <div class="auth-header">
+          <div class="auth-icon-badge">🚀</div>
+          <h2>Create an Account</h2>
+          <p class="auth-subtitle">Join the SocialMedia community to share posts, like, and comment</p>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <form id="registerForm" novalidate>
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="e.g. Alex Morgan"
+              required
+              autocomplete="name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="e.g. alexmorgan"
+              required
+              autocomplete="username"
+            />
+            <div class="form-hint">Letters, numbers, and underscores only (3-30 chars)</div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="name@example.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Minimum 6 characters"
+              required
+              autocomplete="new-password"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="Re-enter your password"
+              required
+              autocomplete="new-password"
+            />
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn">Create Account</button>
+        </form>
+
+        <div class="form-footer">
+          Already have an account? <a href="/login.html">Log in here</a>
+        </div>
+      </main>
+    </div>
+
     <script src="/js/app.js"></script>
+    <script src="/js/auth.js"></script>
   </body>
 </html>

@@ -3,20 +3,67 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login</title>
+    <title>Log In - SocialMedia</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     <header>
-      <h1>Login</h1>
-      <nav>
-        <a href="/index.html">Home</a>
-        <a href="/register.html">Register</a>
+      <div class="nav-brand">
+        <a href="/index.html" class="nav-logo">
+          <span class="logo-badge">⚡</span>
+          <span>SocialMedia</span>
+        </a>
+      </div>
+      <nav id="navbar">
+        <!-- Populated by app.js -->
       </nav>
     </header>
-    <main>
-      <p>Authentication will be added later.</p>
-    </main>
+
+    <div class="page-wrapper">
+      <main>
+        <div class="auth-header">
+          <div class="auth-icon-badge">👋</div>
+          <h2>Welcome Back</h2>
+          <p class="auth-subtitle">Log in to connect with friends and see the latest updates</p>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <form id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="name@example.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn">Log In</button>
+        </form>
+
+        <div class="form-footer">
+          Don't have an account? <a href="/register.html">Create one now</a>
+        </div>
+      </main>
+    </div>
+
     <script src="/js/app.js"></script>
+    <script src="/js/auth.js"></script>
   </body>
 </html>
