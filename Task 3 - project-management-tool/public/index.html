@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Management Tool | Collaborative Workspace</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">P</div>
+        <span>ProjectMaster</span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="login.html" class="btn btn-secondary btn-sm">Sign In</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <main class="hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-badge">🚀 Internship Task 3 • Full-Stack Web App</span>
+        <h1 class="hero-title">
+          Streamline Projects &amp; <br>
+          <span class="hero-gradient">Group Collaboration</span>
+        </h1>
+        <p class="hero-subtitle">
+          An intuitive, lightweight full-stack project management application.
+          Organize your initiatives, invite team members, and collaborate seamlessly in real time.
+        </p>
+
+        <div class="hero-actions" id="heroActions">
+          <a href="register.html" class="btn btn-primary" style="padding: 0.8rem 1.8rem; font-size: 1.05rem;">
+            Create Free Account
+          </a>
+          <a href="login.html" class="btn btn-secondary" style="padding: 0.8rem 1.8rem; font-size: 1.05rem;">
+            Sign In to Workspace
+          </a>
+        </div>
+
+        <!-- Features Showcase -->
+        <div class="features-grid">
+          <div class="feature-box">
+            <h3>🔐 Robust Authentication</h3>
+            <p>Stateless JWT authentication paired with industry-standard bcrypt password hashing ensures safe, encrypted access.</p>
+          </div>
+          <div class="feature-box">
+            <h3>📁 Project Organization</h3>
+            <p>Create, update, and manage multiple projects with designated owners, descriptions, and automatic activity timestamps.</p>
+          </div>
+          <div class="feature-box">
+            <h3>👥 Team Collaboration</h3>
+            <p>Seamlessly invite registered colleagues by username or email. Manage membership permissions with owner authorization.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 ProjectMaster. Built for CodeAlpha Internship Task 3.</p>
+    </div>
+  </footer>
+
+  <script src="js/auth.js"></script>
+  <script>
+    // If user is already authenticated, update navigation to direct dashboard access
+    document.addEventListener('DOMContentLoaded', () => {
+      if (isAuthenticated()) {
+        const user = getUser();
+        const navLinks = document.getElementById('navLinks');
+        const heroActions = document.getElementById('heroActions');
+
+        if (navLinks) {
+          navLinks.innerHTML = `
+            <a href="dashboard.html" class="btn btn-primary btn-sm">Go to Dashboard &rarr;</a>
+          `;
+        }
+
+        if (heroActions) {
+          heroActions.innerHTML = `
+            <a href="dashboard.html" class="btn btn-primary" style="padding: 0.8rem 2rem; font-size: 1.05rem;">
+              Continue to Dashboard (${user ? user.name : 'Workspace'}) &rarr;
+            </a>
+          `;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

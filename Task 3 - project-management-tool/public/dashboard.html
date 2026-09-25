@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Project Management Tool</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon">P</div>
+          <span>ProjectMaster</span>
+        </a>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <a href="dashboard.html" class="nav-menu-item active">Dashboard</a>
+          <a href="#projectsSection" class="nav-menu-item">Projects</a>
+        </div>
+      </div>
+
+      <div class="nav-links">
+        <div class="user-profile-pill" onclick="openProfileModal()" title="View Account Profile">
+          <div id="userNavAvatar" class="member-avatar-mini" style="background: var(--primary);">?</div>
+          <span id="userNavName" style="font-size: 0.875rem; font-weight: 600; color: var(--text-main);">User</span>
+        </div>
+        <button id="logoutBtn" class="btn btn-secondary btn-sm">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Main Content -->
+  <main class="container" style="flex: 1; padding-top: 1.5rem; padding-bottom: 3rem;">
+
+    <!-- User Welcome & Action Banner -->
+    <header class="dashboard-header">
+      <div class="user-welcome">
+        <h2>Welcome back, <span id="welcomeUserName" style="color: var(--primary);">User</span>! 👋</h2>
+        <p>Manage projects, track tasks on Kanban boards, and collaborate with your team.</p>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+          + Create Project
+        </button>
+      </div>
+    </header>
+
+    <!-- Metrics / Stats Cards Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-indigo">📁</div>
+        <div class="stat-content">
+          <h4>Total Projects</h4>
+          <div id="statTotalProjects" class="stat-number">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-purple">👑</div>
+        <div class="stat-content">
+          <h4>Projects Owned</h4>
+          <div id="statOwnedProjects" class="stat-number">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-sky">👥</div>
+        <div class="stat-content">
+          <h4>Projects Joined</h4>
+          <div id="statJoinedProjects" class="stat-number">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">⚡</div>
+        <div class="stat-content">
+          <h4>Session Status</h4>
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--success); margin-top: 0.2rem;">
+            ● Active (JWT)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projectsSection">
+      <!-- Toolbar: Tabs & Search -->
+      <div class="project-toolbar">
+        <div class="tab-group">
+          <button class="tab-btn active" data-tab="all" onclick="filterProjectsTab('all', this)">
+            All (<span id="tabCountAll">0</span>)
+          </button>
+          <button class="tab-btn" data-tab="owned" onclick="filterProjectsTab('owned', this)">
+            Owned by Me (<span id="tabCountOwned">0</span>)
+          </button>
+          <button class="tab-btn" data-tab="joined" onclick="filterProjectsTab('joined', this)">
+            Joined as Member (<span id="tabCountJoined">0</span>)
+          </button>
+        </div>
+
+        <div style="min-width: 240px;">
+          <input
+            type="text"
+            id="projectSearchInput"
+            class="search-input"
+            placeholder="🔍 Search projects..."
+            style="width: 100%;"
+            oninput="handleProjectSearch(this.value)"
+          >
+        </div>
+      </div>
+
+      <!-- Dynamic Projects Grid -->
+      <div id="projectsContainer" class="projects-grid">
+        <!-- Rendered dynamically by js/dashboard.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ACCOUNT / PROFILE                                      -->
+  <!-- ============================================================== -->
+  <div id="profileModal" class="modal-overlay">
+    <div class="modal" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Account Profile</h3>
+        <button class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+          <div id="profileAvatar" class="user-avatar-circle" style="width: 60px; height: 60px; font-size: 1.4rem;">?</div>
+          <div>
+            <h3 id="profileFullName" style="font-size: 1.2rem; font-weight: 700;">Loading...</h3>
+            <span id="profileUsername" style="color: var(--text-muted); font-size: 0.9rem;">@username</span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.9rem;">
+          <label class="form-label">Email Address</label>
+          <input type="text" id="profileEmail" class="form-control" readonly style="opacity: 0.85;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.9rem;">
+          <label class="form-label">Member Since</label>
+          <input type="text" id="profileCreatedAt" class="form-control" readonly style="opacity: 0.85;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Authentication Type</label>
+          <input type="text" value="JSON Web Token (JWT Bearer Auth)" class="form-control" readonly style="opacity: 0.85;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CREATE NEW PROJECT                                     -->
+  <!-- ============================================================== -->
+  <div id="createProjectModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Project</h3>
+        <button class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="createProjectForm">
+        <div class="modal-body">
+          <div id="createProjectAlert" class="alert"></div>
+
+          <div class="form-group">
+            <label for="newProjectName" class="form-label">Project Name *</label>
+            <input
+              type="text"
+              id="newProjectName"
+              class="form-control"
+              placeholder="e.g. Website Redesign Q3"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="newProjectDesc" class="form-label">Description (Optional)</label>
+            <textarea
+              id="newProjectDesc"
+              class="form-control"
+              placeholder="Provide a brief summary of what this project aims to accomplish..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: PROJECT DETAILS & TEAM COLLABORATION                   -->
+  <!-- ============================================================== -->
+  <div id="projectDetailsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 650px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <h3 id="detailModalTitle" class="modal-title">Project Details</h3>
+          <span id="detailRoleBadge" class="role-badge">Member</span>
+        </div>
+        <button class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Project Info -->
+        <div style="margin-bottom: 1.5rem;">
+          <h2 id="detailProjectName" style="font-size: 1.4rem; margin-bottom: 0.4rem;"></h2>
+          <p id="detailProjectDesc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;"></p>
+          <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.75rem; display: flex; gap: 1.5rem;">
+            <span>Created: <strong id="detailCreatedAt" style="color: var(--text-muted);"></strong></span>
+            <span>Last Updated: <strong id="detailUpdatedAt" style="color: var(--text-muted);"></strong></span>
+          </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.25rem 0;">
+
+        <!-- Project Owner Info -->
+        <div class="team-list-section">
+          <div class="team-list-title">Project Owner</div>
+          <div id="projectOwnerBox"></div>
+        </div>
+
+        <!-- Team Members List -->
+        <div class="team-list-section">
+          <div class="team-list-title">Team Members</div>
+          <div id="membersList">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Add Member Section (Only visible to project owner) -->
+        <div id="addMemberSection" class="team-list-section" style="display: none; margin-top: 1.5rem; background: var(--bg-main); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <div class="team-list-title" style="margin-bottom: 0.35rem;">Invite Team Member</div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Add an existing registered user by their username or email address:
+          </p>
+
+          <div id="addMemberAlert" class="alert"></div>
+
+          <form id="addMemberForm" class="inline-form">
+            <input
+              type="text"
+              id="memberIdentifier"
+              class="form-control"
+              placeholder="e.g. johndoe or john@example.com"
+              required
+              style="flex: 1;"
+            >
+            <button type="submit" class="btn btn-primary btn-sm">Add Member</button>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div>
+          <!-- Owner only action buttons -->
+          <button id="deleteProjectDetailBtn" class="btn btn-danger btn-sm" onclick="deleteActiveProject()" style="display: none;">
+            Delete Project
+          </button>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <a id="goToBoardBtn" href="#" class="btn btn-primary btn-sm">
+            Open Kanban Board &rarr;
+          </a>
+          <button id="editProjectBtn" class="btn btn-secondary btn-sm" onclick="openEditModal()" style="display: none;">
+            Edit Details
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: EDIT PROJECT                                           -->
+  <!-- ============================================================== -->
+  <div id="editProjectModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Project Details</h3>
+        <button class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="editProjectForm">
+        <div class="modal-body">
+          <div id="editProjectAlert" class="alert"></div>
+
+          <div class="form-group">
+            <label for="editProjectName" class="form-label">Project Name *</label>
+            <input
+              type="text"
+              id="editProjectName"
+              class="form-control"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="editProjectDesc" class="form-label">Description</label>
+            <textarea
+              id="editProjectDesc"
+              class="form-control"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 ProjectMaster. Built for CodeAlpha Internship Task 3.</p>
+    </div>
+  </footer>
+
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
