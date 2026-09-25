@@ -6,9 +6,9 @@
 
 git clone https://github.com/nandhuATgit/codealpha_tasks.git
 
-### 2. Open the Task 1 / Task 2 folder
+### 2. Open the Task 1 / Task 2 folder / Task 3 folder
 
-cd "Task 1 - Ecommerce-Store" / cd "Task 2 - Socialmedia platform
+cd "Task 1 - Ecommerce-Store" / cd "Task 2 - Socialmedia platform" / cd "Task 3 - project-management-tool"
 
 ### 3. Install dependencies
 
