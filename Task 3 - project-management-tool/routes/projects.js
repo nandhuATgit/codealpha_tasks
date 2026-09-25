@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const Project = require('../models/Project');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { emitToProject } = require('../socket');
+const { createNotification } = require('../services/notificationService');
 
 // All project routes require authentication
 router.use(auth);
@@ -187,6 +189,9 @@ router.put('/:id', async (req, res) => {
       .populate('owner', 'name username email')
       .populate('members', 'name username email');
 
+    // Broadcast update to project room
+    emitToProject(project._id, 'project:updated', { projectId: project._id, project: updatedProject });
+
     return res.status(200).json({
       success: true,
       message: 'Project updated successfully!',
@@ -237,6 +242,9 @@ router.delete('/:id', async (req, res) => {
     }
 
     await Project.findByIdAndDelete(id);
+
+    // Broadcast deletion to project room
+    emitToProject(id, 'project:deleted', { projectId: id });
 
     return res.status(200).json({
       success: true,
@@ -324,6 +332,18 @@ router.post('/:id/members', async (req, res) => {
       .populate('owner', 'name username email')
       .populate('members', 'name username email');
 
+    // Broadcast member added to project room
+    emitToProject(id, 'project:member_added', { projectId: id, member: userToAdd, project: updatedProject });
+
+    // Generate real-time notification for the added user
+    await createNotification({
+      recipient: userToAdd._id,
+      sender: req.user.id,
+      type: 'project_added',
+      message: `You were added to project "${project.name}" by ${req.user.name || req.user.username}.`,
+      project: project._id
+    });
+
     return res.status(200).json({
       success: true,
       message: `User ${userToAdd.username} added successfully!`,
@@ -399,6 +419,9 @@ router.delete('/:id/members/:userId', async (req, res) => {
     const updatedProject = await Project.findById(id)
       .populate('owner', 'name username email')
       .populate('members', 'name username email');
+
+    // Broadcast member removed to project room
+    emitToProject(id, 'project:member_removed', { projectId: id, memberId: userId, project: updatedProject });
 
     return res.status(200).json({
       success: true,

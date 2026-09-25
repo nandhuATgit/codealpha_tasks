@@ -5,6 +5,8 @@ const Task = require('../models/Task');
 const Project = require('../models/Project');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { emitToProject } = require('../socket');
+const { createNotification } = require('../services/notificationService');
 
 // All task routes require authentication
 router.use(auth);
@@ -112,6 +114,21 @@ router.post('/', async (req, res) => {
     const populatedTask = await Task.findById(newTask._id)
       .populate('assignedTo', 'name username email')
       .populate('createdBy', 'name username email');
+
+    // Broadcast real-time task creation to project room
+    emitToProject(project._id, 'task:created', { task: populatedTask });
+
+    // Send real-time notification if task was assigned to someone else
+    if (populatedTask.assignedTo && populatedTask.assignedTo._id.toString() !== req.user.id) {
+      await createNotification({
+        recipient: populatedTask.assignedTo._id,
+        sender: req.user.id,
+        type: 'task_assigned',
+        message: `${req.user.name || req.user.username} assigned you to task "${populatedTask.title}" in project "${project.name}".`,
+        project: project._id,
+        task: populatedTask._id
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -294,6 +311,9 @@ router.put('/:id', async (req, res) => {
       });
     }
 
+    const prevStatus = task.status;
+    const prevAssignedTo = task.assignedTo ? task.assignedTo.toString() : null;
+
     if (title !== undefined) {
       if (!title || !title.trim()) {
         return res.status(400).json({
@@ -359,6 +379,46 @@ router.put('/:id', async (req, res) => {
       .populate('assignedTo', 'name username email')
       .populate('createdBy', 'name username email');
 
+    // Broadcast task updated to project room
+    emitToProject(task.project, 'task:updated', { task: updatedTask });
+
+    // Notification if status changed
+    if (status !== undefined && status !== prevStatus) {
+      if (task.assignedTo && task.assignedTo.toString() !== req.user.id) {
+        await createNotification({
+          recipient: task.assignedTo,
+          sender: req.user.id,
+          type: 'task_status_changed',
+          message: `Status of your task "${updatedTask.title}" was moved to "${updatedTask.status}" by ${req.user.name || req.user.username}.`,
+          project: project._id,
+          task: updatedTask._id
+        });
+      }
+      if (task.createdBy.toString() !== req.user.id && (!task.assignedTo || task.assignedTo.toString() !== task.createdBy.toString())) {
+        await createNotification({
+          recipient: task.createdBy,
+          sender: req.user.id,
+          type: 'task_status_changed',
+          message: `Status of task "${updatedTask.title}" was moved to "${updatedTask.status}" by ${req.user.name || req.user.username}.`,
+          project: project._id,
+          task: updatedTask._id
+        });
+      }
+    }
+
+    // Notification if newly assigned
+    const newAssignedId = updatedTask.assignedTo ? updatedTask.assignedTo._id.toString() : null;
+    if (newAssignedId && newAssignedId !== prevAssignedTo && newAssignedId !== req.user.id) {
+      await createNotification({
+        recipient: updatedTask.assignedTo._id,
+        sender: req.user.id,
+        type: 'task_assigned',
+        message: `${req.user.name || req.user.username} assigned you to task "${updatedTask.title}" in project "${project.name}".`,
+        project: project._id,
+        task: updatedTask._id
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: 'Task updated successfully!',
@@ -415,12 +475,41 @@ router.patch('/:id/status', async (req, res) => {
       });
     }
 
+    const prevStatus = task.status;
     task.status = status;
     await task.save();
 
     const updatedTask = await Task.findById(task._id)
       .populate('assignedTo', 'name username email')
       .populate('createdBy', 'name username email');
+
+    // Broadcast status change to project room
+    emitToProject(task.project, 'task:status_changed', { taskId: updatedTask._id, status: updatedTask.status, task: updatedTask });
+    emitToProject(task.project, 'task:updated', { task: updatedTask });
+
+    // Notification if status changed
+    if (prevStatus !== status) {
+      if (task.assignedTo && task.assignedTo.toString() !== req.user.id) {
+        await createNotification({
+          recipient: task.assignedTo,
+          sender: req.user.id,
+          type: 'task_status_changed',
+          message: `Status of your task "${task.title}" was moved to "${status}" by ${req.user.name || req.user.username}.`,
+          project: task.project,
+          task: task._id
+        });
+      }
+      if (task.createdBy.toString() !== req.user.id && (!task.assignedTo || task.assignedTo.toString() !== task.createdBy.toString())) {
+        await createNotification({
+          recipient: task.createdBy,
+          sender: req.user.id,
+          type: 'task_status_changed',
+          message: `Status of task "${task.title}" was moved to "${status}" by ${req.user.name || req.user.username}.`,
+          project: task.project,
+          task: task._id
+        });
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -467,6 +556,8 @@ router.patch('/:id/assign', async (req, res) => {
       });
     }
 
+    const prevAssignedTo = task.assignedTo ? task.assignedTo.toString() : null;
+
     if (!assignedTo || assignedTo === 'unassigned') {
       task.assignedTo = null;
     } else {
@@ -491,6 +582,23 @@ router.patch('/:id/assign', async (req, res) => {
     const updatedTask = await Task.findById(task._id)
       .populate('assignedTo', 'name username email')
       .populate('createdBy', 'name username email');
+
+    // Broadcast assignment change to project room
+    emitToProject(task.project, 'task:assigned', { taskId: updatedTask._id, assignedTo: updatedTask.assignedTo, task: updatedTask });
+    emitToProject(task.project, 'task:updated', { task: updatedTask });
+
+    // Send real-time notification if task was assigned to someone else
+    const newAssignedId = updatedTask.assignedTo ? updatedTask.assignedTo._id.toString() : null;
+    if (newAssignedId && newAssignedId !== prevAssignedTo && newAssignedId !== req.user.id) {
+      await createNotification({
+        recipient: updatedTask.assignedTo._id,
+        sender: req.user.id,
+        type: 'task_assigned',
+        message: `${req.user.name || req.user.username} assigned you to task "${task.title}" in project "${project.name}".`,
+        project: project._id,
+        task: task._id
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -547,7 +655,11 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
+    const taskProjectId = task.project;
     await Task.findByIdAndDelete(id);
+
+    // Broadcast deletion to project room
+    emitToProject(taskProjectId, 'task:deleted', { taskId: id, projectId: taskProjectId });
 
     return res.status(200).json({
       success: true,

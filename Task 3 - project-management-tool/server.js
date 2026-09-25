@@ -1,4 +1,5 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,9 +9,15 @@ const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
 const commentRoutes = require('./routes/comments');
+const notificationRoutes = require('./routes/notifications');
+const socketManager = require('./socket');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Initialize Socket.IO with server
+socketManager.init(server);
 
 // Middleware
 app.use(cors());
@@ -25,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -75,9 +83,12 @@ if (!MONGO_URI || MONGO_URI === 'your_mongodb_atlas_connection_string') {
     });
 }
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 Project Management Tool server is running on http://localhost:${PORT}`);
-});
+// Start Server (only if not required by tests directly)
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(PORT, () => {
+    console.log(`🚀 Project Management Tool server is running on http://localhost:${PORT}`);
+  });
+}
 
 module.exports = app;
+module.exports.server = server;

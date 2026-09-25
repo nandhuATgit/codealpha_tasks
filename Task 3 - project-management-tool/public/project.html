@@ -20,6 +20,27 @@
 
       <div class="nav-links">
         <a href="dashboard.html" class="btn btn-secondary btn-sm">&larr; All Projects</a>
+
+        <!-- Notification Dropdown -->
+        <div class="notifications-wrapper" id="notificationsWrapper">
+          <button id="notificationBellBtn" class="notification-bell-btn" title="Notifications" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span id="navNotificationBadge" class="notification-badge hidden">0</span>
+          </button>
+          <div id="navNotificationDropdown" class="notification-dropdown">
+            <div class="notification-dropdown-header">
+              <h4>Notifications</h4>
+              <button id="markAllReadBtn" class="mark-all-read-btn">Mark all read</button>
+            </div>
+            <div id="navNotificationList" class="notification-list">
+              <div class="notification-empty">Loading notifications...</div>
+            </div>
+          </div>
+        </div>
+
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <div id="userNavAvatar" class="member-avatar-mini" style="background: var(--primary);">?</div>
           <span id="userNavName" style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">User</span>
@@ -309,6 +330,37 @@
             </div>
           </div>
 
+          <!-- Comments & Discussion Section -->
+          <div class="comments-section">
+            <div class="comments-header">
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <span>💬 Activity &amp; Comments</span>
+                <span id="taskCommentsCountBadge" class="count-badge">0</span>
+              </h4>
+            </div>
+
+            <!-- List of Comments -->
+            <div id="taskCommentsList" class="comments-list">
+              <div style="color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 1rem;">
+                No comments yet. Be the first to share an update!
+              </div>
+            </div>
+
+            <!-- Add Comment Form -->
+            <div class="comment-form">
+              <div id="commentFormAlert" class="alert" style="margin-bottom: 0.5rem;"></div>
+              <textarea
+                id="newTaskCommentText"
+                class="form-control"
+                placeholder="Write a comment or update for the team..."
+                rows="2"
+              ></textarea>
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="button" id="submitCommentBtn" class="btn btn-primary btn-sm">Post Comment</button>
+              </div>
+            </div>
+          </div>
+
         </div>
         <div class="modal-footer" style="justify-content: space-between;">
           <button
@@ -380,7 +432,9 @@
     </div>
   </footer>
 
+  <script src="/socket.io/socket.io.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/notifications.js"></script>
   <script src="js/kanban.js"></script>
 </body>
 </html>

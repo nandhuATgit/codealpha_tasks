@@ -128,6 +128,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCreateTaskForm();
   setupEditTaskForm();
   setupTeamInviteForm();
+  setupCommentHandlers();
+  initKanbanSocket();
 });
 
 // Load authenticated user
@@ -596,6 +598,7 @@ function openEditTaskModal(taskId) {
   }
 
   hideAlert('editTaskAlert');
+  loadTaskComments(taskId);
   openModal('editTaskModal');
 }
 
@@ -839,5 +842,462 @@ function setupModals() {
     cancelBtns.forEach((btn) => {
       btn.addEventListener('click', () => overlay.classList.remove('active'));
     });
+  });
+}
+
+// ==============================================================
+// TASK COMMENTS & DISCUSSION
+// ==============================================================
+let currentTaskComments = [];
+
+// Relative time formatter helper for comments
+function getCommentTimeAgo(dateString) {
+  if (typeof formatTimeAgo === 'function') {
+    return formatTimeAgo(dateString);
+  }
+  if (!dateString) return '';
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffSec = Math.floor((now - past) / 1000);
+  if (diffSec < 60) return 'Just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}h ago`;
+  return past.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+async function loadTaskComments(taskId) {
+  const listEl = document.getElementById('taskCommentsList');
+  const countBadge = document.getElementById('taskCommentsCountBadge');
+  const commentInput = document.getElementById('newTaskCommentText');
+  hideAlert('commentFormAlert');
+
+  if (commentInput) commentInput.value = '';
+  if (countBadge) countBadge.textContent = '0';
+  if (listEl) {
+    listEl.innerHTML = '<div style="color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 1rem;">Loading comments...</div>';
+  }
+
+  try {
+    const res = await authFetch(`/api/comments?task=${taskId}`);
+    if (!res) return;
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      currentTaskComments = data.comments || [];
+      renderTaskComments();
+    } else {
+      if (listEl) {
+        listEl.innerHTML = `<div style="color: var(--danger); font-size: 0.85rem; text-align: center; padding: 1rem;">${escapeHtml(data.error || 'Failed to load comments.')}</div>`;
+      }
+    }
+  } catch (err) {
+    if (listEl) {
+      listEl.innerHTML = '<div style="color: var(--danger); font-size: 0.85rem; text-align: center; padding: 1rem;">Connection error loading comments.</div>';
+    }
+  }
+}
+
+function renderTaskComments() {
+  const listEl = document.getElementById('taskCommentsList');
+  const countBadge = document.getElementById('taskCommentsCountBadge');
+  if (!listEl) return;
+
+  if (countBadge) countBadge.textContent = currentTaskComments.length;
+
+  if (currentTaskComments.length === 0) {
+    listEl.innerHTML = '<div style="color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 1rem;">No comments yet. Be the first to share an update!</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+  currentTaskComments.forEach((comment) => {
+    const bubble = createCommentBubble(comment);
+    listEl.appendChild(bubble);
+  });
+}
+
+function createCommentBubble(comment) {
+  const bubble = document.createElement('div');
+  bubble.className = 'comment-bubble';
+  bubble.dataset.commentId = comment._id;
+
+  const author = comment.user || {};
+  const isAuthor = currentUser && (author._id === currentUser.id || author === currentUser.id);
+  const isOwner = currentProject && currentProject.owner && (currentProject.owner._id === (currentUser && currentUser.id) || currentProject.owner === (currentUser && currentUser.id));
+
+  bubble.innerHTML = `
+    <div class="comment-meta">
+      <div class="comment-author-info">
+        <div class="member-avatar-mini" style="width: 22px; height: 22px; font-size: 0.65rem;">
+          ${getInitials(author.name)}
+        </div>
+        <span class="comment-author-name">${escapeHtml(author.name || 'User')}</span>
+        <span class="comment-time">${getCommentTimeAgo(comment.createdAt)}</span>
+      </div>
+      <div class="comment-actions">
+        ${isAuthor ? `<button type="button" class="comment-action-btn edit-comment-btn">Edit</button>` : ''}
+        ${isAuthor || isOwner ? `<button type="button" class="comment-action-btn comment-action-danger delete-comment-btn">Delete</button>` : ''}
+      </div>
+    </div>
+    <div class="comment-text">${escapeHtml(comment.text)}</div>
+  `;
+
+  // Edit Comment Handler
+  const editBtn = bubble.querySelector('.edit-comment-btn');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      startInlineCommentEdit(bubble, comment);
+    });
+  }
+
+  // Delete Comment Handler
+  const deleteBtn = bubble.querySelector('.delete-comment-btn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      confirmDeleteComment(comment._id);
+    });
+  }
+
+  return bubble;
+}
+
+function startInlineCommentEdit(bubble, comment) {
+  const textDiv = bubble.querySelector('.comment-text');
+  const actionsDiv = bubble.querySelector('.comment-actions');
+  if (!textDiv) return;
+
+  const originalText = comment.text;
+  if (actionsDiv) actionsDiv.style.display = 'none';
+
+  textDiv.innerHTML = `
+    <textarea class="form-control inline-comment-edit-input" rows="2" style="font-size: 0.85rem; margin-top: 0.3rem; resize: vertical;">${escapeHtml(originalText)}</textarea>
+    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.4rem;">
+      <button type="button" class="btn btn-secondary btn-sm cancel-inline-edit" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm save-inline-edit" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Save</button>
+    </div>
+  `;
+
+  const input = textDiv.querySelector('.inline-comment-edit-input');
+  input.focus();
+
+  textDiv.querySelector('.cancel-inline-edit').addEventListener('click', () => {
+    if (actionsDiv) actionsDiv.style.display = 'flex';
+    textDiv.textContent = comment.text;
+  });
+
+  textDiv.querySelector('.save-inline-edit').addEventListener('click', async () => {
+    const newText = input.value.trim();
+    if (!newText) {
+      alert('Comment text cannot be empty.');
+      return;
+    }
+
+    try {
+      const res = await authFetch(`/api/comments/${comment._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ text: newText })
+      });
+
+      if (!res) return;
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        comment.text = data.comment.text;
+        if (actionsDiv) actionsDiv.style.display = 'flex';
+        textDiv.textContent = comment.text;
+      } else {
+        alert(data.error || 'Failed to update comment.');
+      }
+    } catch (err) {
+      alert('Connection error.');
+    }
+  });
+}
+
+async function confirmDeleteComment(commentId) {
+  if (!confirm('Are you sure you want to delete this comment?')) return;
+
+  try {
+    const res = await authFetch(`/api/comments/${commentId}`, {
+      method: 'DELETE'
+    });
+
+    if (!res) return;
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      currentTaskComments = currentTaskComments.filter((c) => c._id !== commentId);
+      renderTaskComments();
+    } else {
+      alert(data.error || 'Failed to delete comment.');
+    }
+  } catch (err) {
+    alert('Connection error.');
+  }
+}
+
+function setupCommentHandlers() {
+  const submitBtn = document.getElementById('submitCommentBtn');
+  const commentInput = document.getElementById('newTaskCommentText');
+
+  if (submitBtn && commentInput) {
+    submitBtn.addEventListener('click', async () => {
+      const text = commentInput.value.trim();
+      if (!text) {
+        showAlert('commentFormAlert', 'Comment text cannot be empty.');
+        return;
+      }
+
+      if (!editingTaskId) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Posting...';
+      hideAlert('commentFormAlert');
+
+      try {
+        const res = await authFetch('/api/comments', {
+          method: 'POST',
+          body: JSON.stringify({
+            task: editingTaskId,
+            text
+          })
+        });
+
+        if (!res) return;
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          commentInput.value = '';
+          // Add comment if not already added by socket
+          if (!currentTaskComments.some((c) => c._id === data.comment._id)) {
+            currentTaskComments.push(data.comment);
+            renderTaskComments();
+          }
+        } else {
+          showAlert('commentFormAlert', data.error || 'Failed to post comment.');
+        }
+      } catch (err) {
+        showAlert('commentFormAlert', 'Error connecting to server.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Post Comment';
+      }
+    });
+
+    // Enter to submit (Shift+Enter for newline)
+    commentInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitBtn.click();
+      }
+    });
+  }
+}
+
+// ==============================================================
+// REAL-TIME SOCKET.IO INTEGRATION FOR KANBAN & COLLABORATION
+// ==============================================================
+let kanbanSocket = null;
+
+function initKanbanSocket() {
+  const token = getToken();
+  if (!token || !projectId) return;
+
+  function joinProjectRoom(sock) {
+    sock.emit('join:project', { projectId }, (ack) => {
+      if (ack && !ack.success) {
+        console.warn('Real-time: Access denied joining project room:', ack.error);
+      } else {
+        console.log(`📡 Connected to real-time project room: project:${projectId}`);
+      }
+    });
+  }
+
+  if (window.sharedAppSocket) {
+    kanbanSocket = window.sharedAppSocket;
+    if (kanbanSocket.connected) {
+      joinProjectRoom(kanbanSocket);
+    } else {
+      kanbanSocket.on('connect', () => joinProjectRoom(kanbanSocket));
+    }
+  } else if (typeof io !== 'undefined') {
+    kanbanSocket = io({ auth: { token } });
+    window.sharedAppSocket = kanbanSocket;
+    kanbanSocket.on('connect', () => joinProjectRoom(kanbanSocket));
+  }
+
+  if (kanbanSocket) {
+    setupKanbanSocketEvents(kanbanSocket);
+  }
+}
+
+function setupKanbanSocketEvents(socket) {
+  if (!socket) return;
+
+  // Task Created
+  socket.on('task:created', ({ task }) => {
+    if (!task) return;
+    const exists = allTasks.some((t) => t._id === task._id);
+    if (!exists) {
+      allTasks.unshift(task);
+      renderKanbanBoard();
+    }
+  });
+
+  // Task Updated
+  socket.on('task:updated', ({ task }) => {
+    if (!task) return;
+    const index = allTasks.findIndex((t) => t._id === task._id);
+    if (index !== -1) {
+      allTasks[index] = task;
+      renderKanbanBoard();
+
+      // If user is currently editing this task, update modal inputs non-intrusively
+      if (editingTaskId === task._id) {
+        const titleInput = document.getElementById('editTaskTitle');
+        const descInput = document.getElementById('editTaskDescription');
+        const statusSelect = document.getElementById('editTaskStatus');
+        const prioritySelect = document.getElementById('editTaskPriority');
+        const assignedSelect = document.getElementById('editTaskAssignedTo');
+
+        if (titleInput && document.activeElement !== titleInput) titleInput.value = task.title;
+        if (descInput && document.activeElement !== descInput) descInput.value = task.description || '';
+        if (statusSelect && document.activeElement !== statusSelect) statusSelect.value = task.status;
+        if (prioritySelect && document.activeElement !== prioritySelect) prioritySelect.value = task.priority;
+        if (assignedSelect && document.activeElement !== assignedSelect) {
+          assignedSelect.value = task.assignedTo ? (task.assignedTo._id || task.assignedTo) : '';
+        }
+      }
+    }
+  });
+
+  // Task Status Changed
+  socket.on('task:status_changed', ({ taskId, status, task }) => {
+    const index = allTasks.findIndex((t) => t._id === taskId);
+    if (index !== -1) {
+      if (task) {
+        allTasks[index] = task;
+      } else {
+        allTasks[index].status = status;
+      }
+      renderKanbanBoard();
+
+      if (editingTaskId === taskId) {
+        const statusSelect = document.getElementById('editTaskStatus');
+        if (statusSelect && document.activeElement !== statusSelect) {
+          statusSelect.value = status;
+        }
+      }
+    }
+  });
+
+  // Task Assigned
+  socket.on('task:assigned', ({ taskId, assignedTo, task }) => {
+    const index = allTasks.findIndex((t) => t._id === taskId);
+    if (index !== -1) {
+      if (task) {
+        allTasks[index] = task;
+      } else {
+        allTasks[index].assignedTo = assignedTo;
+      }
+      renderKanbanBoard();
+
+      if (editingTaskId === taskId) {
+        const assignedSelect = document.getElementById('editTaskAssignedTo');
+        if (assignedSelect && document.activeElement !== assignedSelect) {
+          assignedSelect.value = assignedTo ? (assignedTo._id || assignedTo) : '';
+        }
+      }
+    }
+  });
+
+  // Task Deleted
+  socket.on('task:deleted', ({ taskId }) => {
+    allTasks = allTasks.filter((t) => t._id !== taskId);
+    renderKanbanBoard();
+
+    if (editingTaskId === taskId) {
+      closeModal('editTaskModal');
+      if (typeof showToast === 'function') {
+        showToast('The task you were viewing was deleted.', 'warning', '🗑️');
+      }
+    }
+  });
+
+  // Comment Created
+  socket.on('comment:created', ({ taskId, comment }) => {
+    if (editingTaskId === taskId && comment) {
+      if (!currentTaskComments.some((c) => c._id === comment._id)) {
+        currentTaskComments.push(comment);
+        renderTaskComments();
+      }
+    }
+  });
+
+  // Comment Updated
+  socket.on('comment:updated', ({ taskId, comment }) => {
+    if (editingTaskId === taskId && comment) {
+      const idx = currentTaskComments.findIndex((c) => c._id === comment._id);
+      if (idx !== -1) {
+        currentTaskComments[idx] = comment;
+        renderTaskComments();
+      }
+    }
+  });
+
+  // Comment Deleted
+  socket.on('comment:deleted', ({ taskId, commentId }) => {
+    if (editingTaskId === taskId && commentId) {
+      currentTaskComments = currentTaskComments.filter((c) => c._id !== commentId);
+      renderTaskComments();
+    }
+  });
+
+  // Member Added
+  socket.on('project:member_added', ({ member, project }) => {
+    if (project) {
+      currentProject = project;
+    } else if (member && currentProject && currentProject.members) {
+      if (!currentProject.members.some((m) => (m._id || m) === (member._id || member))) {
+        currentProject.members.push(member);
+      }
+    }
+    populateMemberOptions();
+    renderTeamModal();
+    const countBadge = document.getElementById('teamCountBadge');
+    if (countBadge && currentProject && currentProject.members) {
+      countBadge.textContent = currentProject.members.length;
+    }
+  });
+
+  // Member Removed
+  socket.on('project:member_removed', ({ memberId, project }) => {
+    if (project) {
+      currentProject = project;
+    } else if (memberId && currentProject && currentProject.members) {
+      currentProject.members = currentProject.members.filter((m) => (m._id || m).toString() !== memberId.toString());
+    }
+    populateMemberOptions();
+    renderTeamModal();
+    const countBadge = document.getElementById('teamCountBadge');
+    if (countBadge && currentProject && currentProject.members) {
+      countBadge.textContent = currentProject.members.length;
+    }
+  });
+
+  // Project Updated
+  socket.on('project:updated', ({ project }) => {
+    if (project) {
+      currentProject = project;
+      document.title = `${currentProject.name} | Kanban Board`;
+      const breadcrumb = document.getElementById('breadcrumbProjectName');
+      const title = document.getElementById('projectHeaderTitle');
+      const desc = document.getElementById('projectHeaderDesc');
+      if (breadcrumb) breadcrumb.textContent = currentProject.name;
+      if (title) title.textContent = currentProject.name;
+      if (desc) desc.textContent = currentProject.description || 'No description provided.';
+    }
   });
 }

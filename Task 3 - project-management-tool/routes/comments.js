@@ -5,6 +5,8 @@ const Comment = require('../models/Comment');
 const Task = require('../models/Task');
 const Project = require('../models/Project');
 const auth = require('../middleware/auth');
+const { emitToProject } = require('../socket');
+const { createNotification } = require('../services/notificationService');
 
 // All comment routes require authentication
 router.use(auth);
@@ -74,6 +76,32 @@ router.post('/', async (req, res) => {
 
     const populatedComment = await Comment.findById(newComment._id)
       .populate('user', 'name username email');
+
+    // Broadcast new comment to project room
+    emitToProject(project._id, 'comment:created', { taskId: task._id, comment: populatedComment });
+
+    // Send notifications to task assignee and task creator (excluding comment author)
+    if (task.assignedTo && task.assignedTo.toString() !== req.user.id) {
+      await createNotification({
+        recipient: task.assignedTo,
+        sender: req.user.id,
+        type: 'comment_added',
+        message: `${req.user.name || req.user.username} commented on your task "${task.title}".`,
+        project: project._id,
+        task: task._id
+      });
+    }
+
+    if (task.createdBy.toString() !== req.user.id && (!task.assignedTo || task.assignedTo.toString() !== task.createdBy.toString())) {
+      await createNotification({
+        recipient: task.createdBy,
+        sender: req.user.id,
+        type: 'comment_added',
+        message: `${req.user.name || req.user.username} commented on task "${task.title}".`,
+        project: project._id,
+        task: task._id
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -200,6 +228,9 @@ router.put('/:id', async (req, res) => {
     const updatedComment = await Comment.findById(comment._id)
       .populate('user', 'name username email');
 
+    // Broadcast updated comment to project room
+    emitToProject(comment.project, 'comment:updated', { taskId: comment.task, comment: updatedComment });
+
     return res.status(200).json({
       success: true,
       message: 'Comment updated successfully!',
@@ -255,7 +286,12 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
+    const commentTaskId = comment.task;
+    const commentProjectId = comment.project;
     await Comment.findByIdAndDelete(id);
+
+    // Broadcast comment deletion to project room
+    emitToProject(commentProjectId, 'comment:deleted', { taskId: commentTaskId, commentId: id });
 
     return res.status(200).json({
       success: true,
